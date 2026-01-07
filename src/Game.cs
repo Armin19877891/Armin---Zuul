@@ -1,146 +1,134 @@
 using System;
 
-class Game
+public class Game
 {
-	// Private fields
-	private Parser parser;
-	private Room currentRoom;
+    private Parser parser;
+    private Player player;
+    private bool finished;
 
-	// Constructor
-	public Game()
-	{
-		parser = new Parser();
-		CreateRooms();
-	}
+    public Game()
+    {
+        parser = new Parser();
+        player = new Player();
+        CreateRooms();
+        finished = false;
+    }
 
-	// Initialise the Rooms (and the Items)
-	private void CreateRooms()
-	{
-		// Create the rooms
-		Room outside = new Room("outside the main entrance of the university");
-		Room theatre = new Room("in a lecture theatre");
-		Room pub = new Room("in the campus pub");
-		Room lab = new Room("in a computing lab");
-		Room office = new Room("in the computing admin office");
+    public void Play()
+    {
+        PrintWelcome();
 
-		// Initialise room exits
-		outside.AddExit("east", theatre);
-		outside.AddExit("south", lab);
-		outside.AddExit("west", pub);
+        while (!finished)
+        {
+            Command command = parser.GetCommand();
+            ProcessCommand(command);
 
-		theatre.AddExit("west", outside);
+            if (!player.IsAlive())
+            {
+                Console.WriteLine("You died.");
+                finished = true;
+            }
+        }
 
-		pub.AddExit("east", outside);
+        Console.WriteLine("Thank you for playing. Goodbye.");
+    }
 
-		lab.AddExit("north", outside);
-		lab.AddExit("east", office);
+    private void PrintWelcome()
+    {
+        Console.WriteLine("Welcome to Zuul!");
+        Console.WriteLine("Type 'help' if you need help.");
+        Console.WriteLine();
+        Console.WriteLine(player.CurrentRoom.GetLongDescription());
+    }
 
-		office.AddExit("west", lab);
+    private void CreateRooms()
+    {
+        Room outside = new Room("outside the main entrance");
+        Room hall = new Room("in the main hall");
+        Room upstairs = new Room("on the upper floor");
+        Room basement = new Room("in the basement");
 
-		// Create your Items here
-		// ...
-		// And add them to the Rooms
-		// ...
+        outside.SetExit("north", hall);
+        hall.SetExit("south", outside);
 
-		// Start game outside
-		currentRoom = outside;
-	}
+        hall.SetExit("up", upstairs);
+        upstairs.SetExit("down", hall);
 
-	//  Main play routine. Loops until end of play.
-	public void Play()
-	{
-		PrintWelcome();
+        outside.SetExit("down", basement);
+        basement.SetExit("up", outside);
 
-		// Enter the main command loop. Here we repeatedly read commands and
-		// execute them until the player wants to quit.
-		bool finished = false;
-		while (!finished)
-		{
-			Command command = parser.GetCommand();
-			finished = ProcessCommand(command);
-		}
-		Console.WriteLine("Thank you for playing.");
-		Console.WriteLine("Press [Enter] to continue.");
-		Console.ReadLine();
-	}
+        player.CurrentRoom = outside;
+    }
 
-	// Print out the opening message for the player.
-	private void PrintWelcome()
-	{
-		Console.WriteLine();
-		Console.WriteLine("Welcome to Zuul!");
-		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
-		Console.WriteLine("Type 'help' if you need help.");
-		Console.WriteLine();
-		Console.WriteLine(currentRoom.GetLongDescription());
-	}
+    private void ProcessCommand(Command command)
+    {
+        if (command.IsUnknown())
+        {
+            Console.WriteLine("I don't know what you mean...");
+            return;
+        }
 
-	// Given a command, process (that is: execute) the command.
-	// If this command ends the game, it returns true.
-	// Otherwise false is returned.
-	private bool ProcessCommand(Command command)
-	{
-		bool wantToQuit = false;
+        string commandWord = command.CommandWord;
 
-		if(command.IsUnknown())
-		{
-			Console.WriteLine("I don't know what you mean...");
-			return wantToQuit; // false
-		}
+        if (commandWord.Equals("help"))
+        {
+            PrintHelp();
+        }
+        else if (commandWord.Equals("go"))
+        {
+            GoRoom(command);
+        }
+        else if (commandWord.Equals("look"))
+        {
+            Look();
+        }
+        else if (commandWord.Equals("status"))
+        {
+            Status();
+        }
+        else if (commandWord.Equals("quit"))
+        {
+            finished = true;
+        }
+    }
 
-		switch (command.CommandWord)
-		{
-			case "help":
-				PrintHelp();
-				break;
-			case "go":
-				GoRoom(command);
-				break;
-			case "quit":
-				wantToQuit = true;
-				break;
-		}
+    private void PrintHelp()
+    {
+        Console.WriteLine("You are lost. You are alone.");
+        Console.WriteLine("Your command words are:");
+        parser.ShowCommands();
+    }
 
-		return wantToQuit;
-	}
+    private void Look()
+    {
+        Console.WriteLine(player.CurrentRoom.GetLongDescription());
+    }
 
-	// ######################################
-	// implementations of user commands:
-	// ######################################
-	
-	// Print out some help information.
-	// Here we print the mission and a list of the command words.
-	private void PrintHelp()
-	{
-		Console.WriteLine("You are lost. You are alone.");
-		Console.WriteLine("You wander around at the university.");
-		Console.WriteLine();
-		// let the parser print the commands
-		parser.PrintValidCommands();
-	}
+    private void Status()
+    {
+        Console.WriteLine("Health: " + player.Health);
+    }
 
-	// Try to go to one direction. If there is an exit, enter the new
-	// room, otherwise print an error message.
-	private void GoRoom(Command command)
-	{
-		if(!command.HasSecondWord())
-		{
-			// if there is no second word, we don't know where to go...
-			Console.WriteLine("Go where?");
-			return;
-		}
+    private void GoRoom(Command command)
+    {
+        if (!command.HasSecondWord())
+        {
+            Console.WriteLine("Go where?");
+            return;
+        }
 
-		string direction = command.SecondWord;
+        string direction = command.SecondWord;
+        Room nextRoom = player.CurrentRoom.GetExit(direction);
 
-		// Try to go to the next room.
-		Room nextRoom = currentRoom.GetExit(direction);
-		if (nextRoom == null)
-		{
-			Console.WriteLine("There is no door to "+direction+"!");
-			return;
-		}
-
-		currentRoom = nextRoom;
-		Console.WriteLine(currentRoom.GetLongDescription());
-	}
+        if (nextRoom == null)
+        {
+            Console.WriteLine("There is no door!");
+        }
+        else
+        {
+            player.CurrentRoom = nextRoom;
+            player.Damage(10);
+            Console.WriteLine(player.CurrentRoom.GetLongDescription());
+        }
+    }
 }

@@ -1,4 +1,4 @@
-class Command
+public class Command
 {
 	public string CommandWord { get; init; }
 	public string SecondWord { get; init; }

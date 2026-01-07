@@ -1,30 +1,33 @@
 using System.Collections.Generic;
 
-class CommandLibrary
+public class CommandLibrary
 {
-	// A List that holds all valid command words
-	private readonly List<string> validCommands;
+    private Dictionary<string, string> commands;
 
-	// Constructor - initialise the command words.
-	public CommandLibrary()
-	{
-		validCommands = new List<string>();
+    public CommandLibrary()
+    {
+        commands = new Dictionary<string, string>();
 
-		validCommands.Add("help");
-		validCommands.Add("go");
-		validCommands.Add("quit");
-	}
+        // valid commands
+        commands["go"] = "move to another room";
+        commands["quit"] = "quit the game";
+        commands["help"] = "show help";
+        commands["look"] = "look around";
+        commands["status"] = "show player status";
+        commands["take"] = "take an item";
+        commands["drop"] = "drop an item";
+        commands["use"] = "use an item";
+    }
 
-	// Check whether a given string is a valid command word.
-	// Return true if it is, false if it isn't.
-	public bool IsValidCommandWord(string instring)
-	{
-		return validCommands.Contains(instring);
-	}
+    // check if command exists
+    public bool IsValidCommandWord(string commandWord)
+    {
+        return commands.ContainsKey(commandWord);
+    }
 
-	// returns a list of valid command words as a comma separated string.
-	public string GetCommandsString()
-	{
-		return String.Join(", ", validCommands);
-	}
+    // return all commands as a string
+    public string GetCommandsString()
+    {
+        return string.Join(" ", commands.Keys);
+    }
 }
