@@ -1,5 +1,3 @@
-# Armin---Zuul
-Made for school assignments.
 # Zuul
 
 Een simpele textadventure.

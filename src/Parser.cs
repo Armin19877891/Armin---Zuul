@@ -1,40 +1,45 @@
 using System;
 
-public class Parser
+namespace Zuul
 {
-    private CommandLibrary commandLibrary;
-
-    public Parser()
+    class Parser
     {
-        commandLibrary = new CommandLibrary();
-    }
+        private CommandLibrary commandLibrary;
 
-    public Command GetCommand()
-    {
-        Console.Write("> ");
-        string input = Console.ReadLine();
-        string[] words = input.Split(" ");
-
-        string word1 = null;
-        string word2 = null;
-
-        if (words.Length > 0) word1 = words[0];
-        if (words.Length > 1) word2 = words[1];
-
-        if (commandLibrary.IsValidCommandWord(word1))
+        public Parser()
         {
-            return new Command(word1, word2);
+            commandLibrary = new CommandLibrary();
         }
-        else
-        {
-            return new Command(null, word2);
-        }
-    }
 
-    // REQUIRED by Game.cs
-    public void ShowCommands()
-    {
-        Console.WriteLine("Available commands:");
-        Console.WriteLine(commandLibrary.GetCommandsString());
+        public CommandLibrary CommandLibrary
+        {
+            get { return commandLibrary; }
+        }
+
+        public Command GetCommand()
+        {
+            Console.Write("> ");
+            string inputLine = Console.ReadLine();
+
+            string word1 = null;
+            string word2 = null;
+
+            string[] words = inputLine.Split(' ');
+
+            if (words.Length > 0)
+                word1 = words[0];
+
+            if (words.Length > 1)
+                word2 = words[1];
+
+            if (commandLibrary.IsValidCommand(word1))
+            {
+                return new Command(word1, word2);
+            }
+            else
+            {
+                return new Command(null, word2);
+            }
+        }
     }
 }

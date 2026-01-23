@@ -1,9 +1,11 @@
-class Program
+namespace Zuul
 {
-	public static void Main(string[] args)
-	{
-		// Create and play the Game.
-		Game game = new Game();
-		game.Play();
-	}
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Game game = new Game();
+            game.Play();
+        }
+    }
 }

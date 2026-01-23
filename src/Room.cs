@@ -1,46 +1,44 @@
-using System;
 using System.Collections.Generic;
 
-public class Room
+namespace Zuul
 {
-    // Private fields
-    private string description;
-    private Dictionary<string, Room> exits; // stores exits of this room
-
-    // Create a room described "description"
-    public Room(string desc)
+    class Room
     {
-        description = desc;
-        exits = new Dictionary<string, Room>();
-    }
+        private string description;
+        private Dictionary<string, Room> exits;
+        private Inventory chest;
 
-    // Define an exit from this room
-    public void SetExit(string direction, Room neighbor)
-    {
-        exits[direction] = neighbor;
-    }
-
-    // Return the room that is reached if we go from this room in direction "direction"
-    public Room GetExit(string direction)
-    {
-        if (exits.ContainsKey(direction))
+        public Room(string description)
         {
-            return exits[direction];
+            this.description = description;
+            exits = new Dictionary<string, Room>();
+            chest = new Inventory(999999);
         }
-        return null;
-    }
 
-    // Return a description of the room
-    public string GetLongDescription()
-    {
-        return "You are " + description + ".\n" + GetExitString();
-    }
+        public Inventory Chest
+        {
+            get { return chest; }
+        }
 
-    // Return a string describing the room's exits
-    private string GetExitString()
-    {
-        string str = "Exits: ";
-        str += String.Join(", ", exits.Keys);
-        return str;
+        public void SetExit(string direction, Room neighbor)
+        {
+            exits[direction] = neighbor;
+        }
+
+        public Room GetExit(string direction)
+        {
+            exits.TryGetValue(direction, out Room room);
+            return room;
+        }
+
+        public string GetDescription()
+        {
+            return description;
+        }
+
+        public string GetExitString()
+        {
+            return string.Join(" ", exits.Keys);
+        }
     }
 }

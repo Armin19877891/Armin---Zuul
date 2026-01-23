@@ -1,33 +1,33 @@
 using System.Collections.Generic;
 
-public class CommandLibrary
+namespace Zuul
 {
-    private Dictionary<string, string> commands;
-
-    public CommandLibrary()
+    class CommandLibrary
     {
-        commands = new Dictionary<string, string>();
+        private HashSet<string> validCommands;
 
-        // valid commands
-        commands["go"] = "move to another room";
-        commands["quit"] = "quit the game";
-        commands["help"] = "show help";
-        commands["look"] = "look around";
-        commands["status"] = "show player status";
-        commands["take"] = "take an item";
-        commands["drop"] = "drop an item";
-        commands["use"] = "use an item";
-    }
+        public CommandLibrary()
+        {
+            validCommands = new HashSet<string>
+            {
+                "go",
+                "quit",
+                "help",
+                "look",
+                "take",
+                "drop",
+                "status"
+            };
+        }
 
-    // check if command exists
-    public bool IsValidCommandWord(string commandWord)
-    {
-        return commands.ContainsKey(commandWord);
-    }
+        public bool IsValidCommand(string commandWord)
+        {
+            return validCommands.Contains(commandWord);
+        }
 
-    // return all commands as a string
-    public string GetCommandsString()
-    {
-        return string.Join(" ", commands.Keys);
+        public string ShowAll()
+        {
+            return string.Join(" ", validCommands);
+        }
     }
 }

@@ -1,134 +1,174 @@
 using System;
 
-public class Game
+namespace Zuul
 {
-    private Parser parser;
-    private Player player;
-    private bool finished;
-
-    public Game()
+    class Game
     {
-        parser = new Parser();
-        player = new Player();
-        CreateRooms();
-        finished = false;
-    }
+        private Parser parser;
+        private Player player;
+        private bool finished;
 
-    public void Play()
-    {
-        PrintWelcome();
-
-        while (!finished)
+        public Game()
         {
-            Command command = parser.GetCommand();
-            ProcessCommand(command);
+            parser = new Parser();
+            player = new Player();
+            CreateRooms();
+            finished = false;
+        }
 
-            if (!player.IsAlive())
+        public void Play()
+        {
+            PrintWelcome();
+
+            while (!finished)
             {
-                Console.WriteLine("You died.");
-                finished = true;
+                if (!player.IsAlive())
+                {
+                    Console.WriteLine("You have died. Game over.");
+                    break;
+                }
+
+                Command command = parser.GetCommand();
+                ProcessCommand(command);
+            }
+
+            Console.WriteLine("Thank you for playing.");
+        }
+
+        private void PrintWelcome()
+        {
+            Console.WriteLine("Welcome to Zuul!");
+            Console.WriteLine("Type 'help' if you need help.");
+            Console.WriteLine();
+            PrintRoomInfo();
+        }
+
+        private void CreateRooms()
+        {
+            // Ground floor
+            Room outside = new Room("outside the main entrance");
+            Room hall = new Room("in a large hall");
+            Room lab = new Room("inside a laboratory");
+
+            // Upper floor
+            Room balcony = new Room("on a balcony overlooking the hall");
+
+            // Connections (horizontal)
+            outside.SetExit("north", hall);
+            hall.SetExit("south", outside);
+            hall.SetExit("east", lab);
+            lab.SetExit("west", hall);
+
+            // Connections (vertical)
+            hall.SetExit("up", balcony);
+            balcony.SetExit("down", hall);
+
+            // Items
+            outside.Chest.Put("key", new Item(1, "A rusty key"));
+            outside.Chest.Put("torch", new Item(2, "A wooden torch"));
+            hall.Chest.Put("map", new Item(1, "A map of the area"));
+            lab.Chest.Put("medkit", new Item(3, "Restores health"));
+            balcony.Chest.Put("coin", new Item(1, "An old gold coin"));
+
+            player.CurrentRoom = outside;
+        }
+
+        private void ProcessCommand(Command command)
+        {
+            if (command.IsUnknown())
+            {
+                Console.WriteLine("I don't know what you mean...");
+                return;
+            }
+
+            switch (command.CommandWord)
+            {
+                case "help":
+                    PrintHelp();
+                    break;
+                case "go":
+                    GoRoom(command);
+                    break;
+                case "look":
+                    PrintRoomInfo();
+                    break;
+                case "take":
+                    Take(command);
+                    break;
+                case "drop":
+                    Drop(command);
+                    break;
+                case "status":
+                    PrintStatus();
+                    break;
+                case "quit":
+                    finished = true;
+                    break;
             }
         }
 
-        Console.WriteLine("Thank you for playing. Goodbye.");
-    }
-
-    private void PrintWelcome()
-    {
-        Console.WriteLine("Welcome to Zuul!");
-        Console.WriteLine("Type 'help' if you need help.");
-        Console.WriteLine();
-        Console.WriteLine(player.CurrentRoom.GetLongDescription());
-    }
-
-    private void CreateRooms()
-    {
-        Room outside = new Room("outside the main entrance");
-        Room hall = new Room("in the main hall");
-        Room upstairs = new Room("on the upper floor");
-        Room basement = new Room("in the basement");
-
-        outside.SetExit("north", hall);
-        hall.SetExit("south", outside);
-
-        hall.SetExit("up", upstairs);
-        upstairs.SetExit("down", hall);
-
-        outside.SetExit("down", basement);
-        basement.SetExit("up", outside);
-
-        player.CurrentRoom = outside;
-    }
-
-    private void ProcessCommand(Command command)
-    {
-        if (command.IsUnknown())
+        private void PrintHelp()
         {
-            Console.WriteLine("I don't know what you mean...");
-            return;
+            Console.WriteLine("You are lost.");
+            Console.WriteLine("Your command words are:");
+            Console.WriteLine(parser.CommandLibrary.ShowAll());
         }
 
-        string commandWord = command.CommandWord;
+        private void GoRoom(Command command)
+        {
+            if (!command.HasSecondWord())
+            {
+                Console.WriteLine("Go where?");
+                return;
+            }
 
-        if (commandWord.Equals("help"))
-        {
-            PrintHelp();
-        }
-        else if (commandWord.Equals("go"))
-        {
-            GoRoom(command);
-        }
-        else if (commandWord.Equals("look"))
-        {
-            Look();
-        }
-        else if (commandWord.Equals("status"))
-        {
-            Status();
-        }
-        else if (commandWord.Equals("quit"))
-        {
-            finished = true;
-        }
-    }
+            Room nextRoom = player.CurrentRoom.GetExit(command.SecondWord);
 
-    private void PrintHelp()
-    {
-        Console.WriteLine("You are lost. You are alone.");
-        Console.WriteLine("Your command words are:");
-        parser.ShowCommands();
-    }
-
-    private void Look()
-    {
-        Console.WriteLine(player.CurrentRoom.GetLongDescription());
-    }
-
-    private void Status()
-    {
-        Console.WriteLine("Health: " + player.Health);
-    }
-
-    private void GoRoom(Command command)
-    {
-        if (!command.HasSecondWord())
-        {
-            Console.WriteLine("Go where?");
-            return;
+            if (nextRoom == null)
+            {
+                Console.WriteLine("There is no exit that way!");
+            }
+            else
+            {
+                player.CurrentRoom = nextRoom;
+                player.Damage(5); // health loss on movement
+                PrintRoomInfo();
+            }
         }
 
-        string direction = command.SecondWord;
-        Room nextRoom = player.CurrentRoom.GetExit(direction);
+        private void Take(Command command)
+        {
+            if (!command.HasSecondWord())
+            {
+                Console.WriteLine("Take what?");
+                return;
+            }
 
-        if (nextRoom == null)
-        {
-            Console.WriteLine("There is no door!");
+            player.TakeFromChest(command.SecondWord);
         }
-        else
+
+        private void Drop(Command command)
         {
-            player.CurrentRoom = nextRoom;
-            player.Damage(10);
-            Console.WriteLine(player.CurrentRoom.GetLongDescription());
+            if (!command.HasSecondWord())
+            {
+                Console.WriteLine("Drop what?");
+                return;
+            }
+
+            player.DropToChest(command.SecondWord);
+        }
+
+        private void PrintStatus()
+        {
+            Console.WriteLine($"Health: {player.Health}");
+            Console.WriteLine("Backpack: " + player.BackpackContents());
+        }
+
+        private void PrintRoomInfo()
+        {
+            Console.WriteLine("You are " + player.CurrentRoom.GetDescription());
+            Console.WriteLine("Exits: " + player.CurrentRoom.GetExitString());
+            Console.WriteLine("Items here: " + player.CurrentRoom.Chest.Show());
         }
     }
 }
