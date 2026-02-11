@@ -16,7 +16,7 @@ namespace Zuul
 
         public bool Put(string itemName, Item item)
         {
-            if (item.Weight > FreeWeight())
+            if (item.Weight + TotalWeight() > maxWeight)
                 return false;
 
             items[itemName] = item;
@@ -31,6 +31,14 @@ namespace Zuul
             Item item = items[itemName];
             items.Remove(itemName);
             return item;
+        }
+
+        public Item Peek(string itemName)
+        {
+            if (!items.ContainsKey(itemName))
+                return null;
+
+            return items[itemName];
         }
 
         public int TotalWeight()
@@ -58,7 +66,7 @@ namespace Zuul
             {
                 sb.Append(key + " ");
             }
-            return sb.ToString();
+            return sb.ToString().Trim();
         }
     }
 }

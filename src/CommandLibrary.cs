@@ -16,7 +16,8 @@ namespace Zuul
                 "look",
                 "take",
                 "drop",
-                "status"
+                "status",
+                "use"
             };
         }
 

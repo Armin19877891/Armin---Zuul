@@ -11,36 +11,26 @@ namespace Zuul
         {
             health = 100;
             backpack = new Inventory(25);
-            CurrentRoom = null;
         }
 
-        // ----- Health -----
+        public int Health => health;
 
         public void Damage(int amount)
         {
             health -= amount;
-            if (health < 0)
-                health = 0;
+            if (health < 0) health = 0;
         }
 
         public void Heal(int amount)
         {
             health += amount;
-            if (health > 100)
-                health = 100;
+            if (health > 100) health = 100;
         }
 
         public bool IsAlive()
         {
             return health > 0;
         }
-
-        public int Health
-        {
-            get { return health; }
-        }
-
-        // ----- Inventory -----
 
         public bool TakeFromChest(string itemName)
         {
@@ -81,6 +71,28 @@ namespace Zuul
         public string BackpackContents()
         {
             return backpack.Show();
+        }
+
+        public string Use(string itemName, string direction)
+        {
+            Item item = backpack.Peek(itemName);
+
+            if (item == null)
+                return "You don't have that item.";
+
+            if (itemName.StartsWith("key"))
+            {
+                if (!CurrentRoom.HasExit(direction))
+                    return "There is no exit that way.";
+
+                if (!CurrentRoom.IsExitLocked(direction))
+                    return "That exit is already unlocked.";
+
+                CurrentRoom.UnlockExit(direction);
+                return $"You unlocked the {direction} exit.";
+            }
+
+            return "Nothing happens.";
         }
     }
 }

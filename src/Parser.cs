@@ -20,26 +20,22 @@ namespace Zuul
         {
             Console.Write("> ");
             string inputLine = Console.ReadLine();
+            string[] words = inputLine.Split(' ');
 
             string word1 = null;
             string word2 = null;
+            string word3 = null;
 
-            string[] words = inputLine.Split(' ');
-
-            if (words.Length > 0)
-                word1 = words[0];
-
-            if (words.Length > 1)
-                word2 = words[1];
+            if (words.Length > 0) word1 = words[0];
+            if (words.Length > 1) word2 = words[1];
+            if (words.Length > 2) word3 = words[2];
 
             if (commandLibrary.IsValidCommand(word1))
             {
-                return new Command(word1, word2);
+                return new Command(word1, word2, word3);
             }
-            else
-            {
-                return new Command(null, word2);
-            }
+
+            return new Command(null, null, null);
         }
     }
 }

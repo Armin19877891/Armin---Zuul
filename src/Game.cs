@@ -13,7 +13,6 @@ namespace Zuul
             parser = new Parser();
             player = new Player();
             CreateRooms();
-            finished = false;
         }
 
         public void Play()
@@ -45,30 +44,25 @@ namespace Zuul
 
         private void CreateRooms()
         {
-            // Ground floor
             Room outside = new Room("outside the main entrance");
-            Room hall = new Room("in a large hall");
-            Room lab = new Room("inside a laboratory");
+            Room hall = new Room("in the main hall");
+            Room hallUpstairs = new Room("on the upper floor of the hall");
+            Room lab = new Room("inside the laboratory");
 
-            // Upper floor
-            Room balcony = new Room("on a balcony overlooking the hall");
-
-            // Connections (horizontal)
-            outside.SetExit("north", hall);
+            // Horizontal exits
+            outside.SetExit("north", hall, true);
             hall.SetExit("south", outside);
-            hall.SetExit("east", lab);
+
+            hall.SetExit("east", lab, true);
             lab.SetExit("west", hall);
 
-            // Connections (vertical)
-            hall.SetExit("up", balcony);
-            balcony.SetExit("down", hall);
+            hall.SetExit("up", hallUpstairs);
+            hallUpstairs.SetExit("down", hall);
 
             // Items
-            outside.Chest.Put("key", new Item(1, "A rusty key"));
-            outside.Chest.Put("torch", new Item(2, "A wooden torch"));
-            hall.Chest.Put("map", new Item(1, "A map of the area"));
+            outside.Chest.Put("key1", new Item(1, "A small brass key"));
+            hall.Chest.Put("key2", new Item(1, "A heavy iron key"));
             lab.Chest.Put("medkit", new Item(3, "Restores health"));
-            balcony.Chest.Put("coin", new Item(1, "An old gold coin"));
 
             player.CurrentRoom = outside;
         }
@@ -101,17 +95,13 @@ namespace Zuul
                 case "status":
                     PrintStatus();
                     break;
+                case "use":
+                    Use(command);
+                    break;
                 case "quit":
                     finished = true;
                     break;
             }
-        }
-
-        private void PrintHelp()
-        {
-            Console.WriteLine("You are lost.");
-            Console.WriteLine("Your command words are:");
-            Console.WriteLine(parser.CommandLibrary.ShowAll());
         }
 
         private void GoRoom(Command command)
@@ -126,14 +116,25 @@ namespace Zuul
 
             if (nextRoom == null)
             {
-                Console.WriteLine("There is no exit that way!");
+                Console.WriteLine("That exit is locked or does not exist.");
             }
             else
             {
                 player.CurrentRoom = nextRoom;
-                player.Damage(5); // health loss on movement
+                player.Damage(5);
                 PrintRoomInfo();
             }
+        }
+
+        private void Use(Command command)
+        {
+            if (!command.HasSecondWord() || !command.HasThirdWord())
+            {
+                Console.WriteLine("Use what where?");
+                return;
+            }
+
+            Console.WriteLine(player.Use(command.SecondWord, command.ThirdWord));
         }
 
         private void Take(Command command)
@@ -169,6 +170,12 @@ namespace Zuul
             Console.WriteLine("You are " + player.CurrentRoom.GetDescription());
             Console.WriteLine("Exits: " + player.CurrentRoom.GetExitString());
             Console.WriteLine("Items here: " + player.CurrentRoom.Chest.Show());
+        }
+
+        private void PrintHelp()
+        {
+            Console.WriteLine("Your command words are:");
+            Console.WriteLine(parser.CommandLibrary.ShowAll());
         }
     }
 }
