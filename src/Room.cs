@@ -1,32 +1,24 @@
 using System.Collections.Generic;
 
-// Represents one room in the spaceship
 public class Room
 {
     private string name;
-    private string description;
+    private string darkDescription;
+    private string lightDescription;
     private Dictionary<string, Room> exits;
-    private Inventory chest;
 
-    public Room(string name, string description)
+    public Inventory Chest { get; }
+
+    public Room(string name, string darkDesc, string lightDesc)
     {
         this.name = name;
-        this.description = description;
+        darkDescription = darkDesc;
+        lightDescription = lightDesc;
         exits = new Dictionary<string, Room>();
-        chest = new Inventory(999999);
+        Chest = new Inventory(9999);
     }
 
-    // Room internal name
-    public string Name
-    {
-        get { return name; }
-    }
-
-    // Room short description
-    public string Description
-    {
-        get { return description; }
-    }
+    public string Name => name;
 
     public void SetExit(string direction, Room neighbor)
     {
@@ -35,22 +27,16 @@ public class Room
 
     public Room GetExit(string direction)
     {
-        if (exits.ContainsKey(direction))
-            return exits[direction];
-
-        return null;
+        return exits.ContainsKey(direction) ? exits[direction] : null;
     }
 
-    // FULL description with exits and items
-    public string GetLongDescription()
+    public string GetLongDescription(bool powerOn)
     {
-        return description +
+        string desc = powerOn ? lightDescription : darkDescription;
+
+        return $"You are in {name}.\n" +
+               desc +
                "\nExits: " + string.Join(" ", exits.Keys) +
-               "\nItems: " + chest.Show();
-    }
-
-    public Inventory Chest
-    {
-        get { return chest; }
+               "\nItems: " + Chest.Show();
     }
 }

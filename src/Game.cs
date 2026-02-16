@@ -4,33 +4,60 @@ class Game
 {
     private Parser parser;
     private Player player;
-    private bool gameWon;
-    private bool powerRestored;
+    private bool powerOn;
+    private bool gameOver;
 
     public Game()
     {
         parser = new Parser();
         player = new Player();
-        gameWon = false;
-        powerRestored = false;
+        powerOn = false;
+        gameOver = false;
         CreateRooms();
     }
 
     private void CreateRooms()
     {
-        // === ROOMS ===
-        Room airlock = new Room("airlock", "A fractured airlock opens into a silent vessel.");
-        Room cargoHold = new Room("cargoHold", "Loose containers drift in weak gravity.");
-        Room reactorShaft = new Room("reactorShaft", "A vertical reactor column hums faintly.");
-        Room maintenanceTube = new Room("maintenanceTube", "A narrow tube forces you upward.");
-        Room commandBridge = new Room("commandBridge", "Dead consoles flicker in darkness.");
-        Room crewQuarters = new Room("crewQuarters", "Sleeping pods hang open and empty.");
-        Room medBay = new Room("medBay", "Cold lights reveal untouched supplies.");
-        Room securitySector = new Room("securitySector", "A damaged defense unit hangs above.");
-        Room powerCore = new Room("powerCore", "The main power core sits dormant.");
-        Room escapeShuttle = new Room("escapeShuttle", "An emergency shuttle waits silently.");
+        Room airlock = new Room("airlock",
+            "The entry airlock is dark and silent.",
+            "The entry airlock is brightly illuminated.");
 
-        // === EXITS ===
+        Room cargoHold = new Room("cargoHold",
+            "Containers float in shadow.",
+            "Cargo crates sit secured under bright lights.");
+
+        Room reactorShaft = new Room("reactorShaft",
+            "The reactor shaft is dormant.",
+            "Energy flows through the reactor systems.");
+
+        Room maintenanceTube = new Room("maintenanceTube",
+            "A narrow vertical shaft disappears upward.",
+            "Maintenance lights guide the vertical climb.");
+
+        Room commandBridge = new Room("commandBridge",
+            "The bridge consoles are lifeless.",
+            "Navigation systems glow across the bridge.");
+
+        Room crewQuarters = new Room("crewQuarters",
+            "Sleeping pods drift in darkness.",
+            "Crew cabins are softly lit.");
+
+        Room medBay = new Room("medBay",
+            "Medical tools float in dim light.",
+            "Medical systems hum with restored power.");
+
+        Room securitySector = new Room("securitySector",
+            "A broken turret hangs from the ceiling.",
+            "Security systems scan the corridor.");
+
+        Room powerCore = new Room("powerCore",
+            "The core is completely inactive.",
+            "The core radiates stable energy.");
+
+        Room escapeShuttle = new Room("escapeShuttle",
+            "The shuttle sits powerless.",
+            "The shuttle engines are ready for launch.");
+
         airlock.SetExit("east", cargoHold);
 
         cargoHold.SetExit("west", airlock);
@@ -56,13 +83,13 @@ class Game
         reactorShaft.SetExit("east", powerCore);
 
         powerCore.SetExit("west", reactorShaft);
+
         escapeShuttle.SetExit("west", securitySector);
 
-        // === ITEMS ===
-        cargoHold.Chest.Put("fusioncell", new Item(5, "A compact fusion power cell."));
-        medBay.Chest.Put("medkit", new Item(3, "A portable medical kit."));
-        crewQuarters.Chest.Put("medkit2", new Item(3, "A portable medical kit."));
-        cargoHold.Chest.Put("medkit3", new Item(3, "A portable medical kit."));
+        cargoHold.Chest.Put("fusioncell", new Item(10, "Fusion cell"));
+        medBay.Chest.Put("medkit1", new Item(5, "Medical kit"));
+        crewQuarters.Chest.Put("medkit2", new Item(5, "Medical kit"));
+        securitySector.Chest.Put("medkit3", new Item(5, "Medical kit"));
 
         player.CurrentRoom = airlock;
     }
@@ -70,9 +97,10 @@ class Game
     public void Play()
     {
         Console.WriteLine("DRIFT PROTOCOL");
-        Console.WriteLine(player.CurrentRoom.GetLongDescription());
+        Console.WriteLine("Type 'help' to see commands.\n");
+        Console.WriteLine(player.CurrentRoom.GetLongDescription(powerOn));
 
-        while (!gameWon && player.IsAlive())
+        while (!gameOver && player.IsAlive())
         {
             Command command = parser.GetCommand();
             ProcessCommand(command);
@@ -89,21 +117,15 @@ class Game
 
         switch (command.CommandWord)
         {
-            case "help":
-                parser.ShowCommands();
-                break;
-
-            case "go":
-                GoRoom(command);
-                break;
-
-            case "look":
-                Console.WriteLine(player.CurrentRoom.GetLongDescription());
-                break;
-
-            case "quit":
-                gameWon = true;
-                break;
+            case "help": parser.ShowCommands(); break;
+            case "go": GoRoom(command); break;
+            case "look": Console.WriteLine(player.CurrentRoom.GetLongDescription(powerOn)); break;
+            case "status": player.ShowStatus(); break;
+            case "take": if (command.HasSecondWord()) player.TakeFromRoom(command.SecondWord); break;
+            case "drop": if (command.HasSecondWord()) player.DropToRoom(command.SecondWord); break;
+            case "use": Use(command); break;
+            case "escape": Escape(); break;
+            case "quit": gameOver = true; break;
         }
     }
 
@@ -115,23 +137,68 @@ class Game
             return;
         }
 
-        Room nextRoom = player.CurrentRoom.GetExit(command.SecondWord);
+        Room next = player.CurrentRoom.GetExit(command.SecondWord);
 
-        if (nextRoom == null)
+        if (next == null)
         {
-            Console.WriteLine("No path detected.");
+            Console.WriteLine("No path.");
             return;
         }
 
-        if (nextRoom.Name == "escapeShuttle" && !powerRestored)
+        player.CurrentRoom = next;
+
+        string cause = next.Name switch
         {
-            Console.WriteLine("The shuttle has no power.");
+            "securitySector" => "a broken turret",
+            "reactorShaft" => "radiation exposure",
+            "cargoHold" => "loose wiring",
+            _ => "unstable flooring"
+        };
+
+        player.Damage(10, cause);
+
+        Console.WriteLine(player.CurrentRoom.GetLongDescription(powerOn));
+    }
+
+    private void Use(Command command)
+    {
+        if (!command.HasSecondWord())
+            return;
+
+        string item = command.SecondWord;
+
+        if (item.StartsWith("medkit") && player.HasItem(item))
+        {
+            player.Heal(50);
+            player.RemoveItem(item);
             return;
         }
 
-        player.CurrentRoom = nextRoom;
-        player.Damage(5);
+        if (item == "fusioncell")
+        {
+            if (player.CurrentRoom.Name == "powerCore" && player.HasItem("fusioncell"))
+            {
+                powerOn = true;
+                player.RemoveItem("fusioncell");
+                Console.WriteLine("Power restored.");
+            }
+            else
+            {
+                Console.WriteLine("No place found to put fusioncell.");
+            }
+        }
+    }
 
-        Console.WriteLine(player.CurrentRoom.GetLongDescription());
+    private void Escape()
+    {
+        if (player.CurrentRoom.Name == "escapeShuttle" && powerOn)
+        {
+            Console.WriteLine("You launch the shuttle and escape.");
+            gameOver = true;
+        }
+        else
+        {
+            Console.WriteLine("Escape not possible.");
+        }
     }
 }

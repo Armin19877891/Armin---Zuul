@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
-// Stores items with a maximum allowed weight
 public class Inventory
 {
-    private int maxWeight;
     private Dictionary<string, Item> items;
+    private int maxWeight;
 
     public Inventory(int maxWeight)
     {
@@ -13,55 +12,40 @@ public class Inventory
         items = new Dictionary<string, Item>();
     }
 
-    // Add item if weight allows
-    public bool Put(string itemName, Item item)
+    public bool Put(string name, Item item)
     {
-        if (FreeWeight() >= item.Weight)
-        {
-            items[itemName] = item;
-            return true;
-        }
-        return false;
+        if (CurrentWeight() + item.Weight > maxWeight)
+            return false;
+
+        items[name] = item;
+        return true;
     }
 
-    // Remove and return item
-    public Item Get(string itemName)
+    public Item Take(string name)
     {
-        if (items.ContainsKey(itemName))
-        {
-            Item item = items[itemName];
-            items.Remove(itemName);
-            return item;
-        }
-        return null;
+        if (!items.ContainsKey(name))
+            return null;
+
+        Item item = items[name];
+        items.Remove(name);
+        return item;
     }
 
-    // Total weight of all items
-    public int TotalWeight()
+    public bool Contains(string name)
     {
-        int total = 0;
-        foreach (Item item in items.Values)
-            total += item.Weight;
-
-        return total;
+        return items.ContainsKey(name);
     }
 
-    // Remaining weight capacity
-    public int FreeWeight()
+    public int CurrentWeight()
     {
-        return maxWeight - TotalWeight();
+        return items.Values.Sum(i => i.Weight);
     }
 
-    // Show item names
     public string Show()
     {
         if (items.Count == 0)
-            return "Nothing";
+            return "none";
 
-        StringBuilder sb = new StringBuilder();
-        foreach (var pair in items)
-            sb.Append(pair.Key + " ");
-
-        return sb.ToString();
+        return string.Join(", ", items.Keys);
     }
 }

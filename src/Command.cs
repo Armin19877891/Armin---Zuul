@@ -1,15 +1,12 @@
-// Represents one user command
 public class Command
 {
     public string CommandWord { get; }
     public string SecondWord { get; }
-    public string ThirdWord { get; }
 
-    public Command(string commandWord, string secondWord, string thirdWord)
+    public Command(string word1, string word2)
     {
-        CommandWord = commandWord;
-        SecondWord = secondWord;
-        ThirdWord = thirdWord;
+        CommandWord = word1;
+        SecondWord = word2;
     }
 
     public bool HasSecondWord()
@@ -17,12 +14,6 @@ public class Command
         return SecondWord != null;
     }
 
-    public bool HasThirdWord()
-    {
-        return ThirdWord != null;
-    }
-
-    // Check if command is unknown
     public bool IsUnknown()
     {
         return CommandWord == null;

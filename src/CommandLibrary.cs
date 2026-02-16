@@ -1,32 +1,25 @@
 using System.Collections.Generic;
 
-// Stores all valid commands
 public class CommandLibrary
 {
-    private HashSet<string> validCommands;
+    private HashSet<string> commands;
 
     public CommandLibrary()
     {
-        validCommands = new HashSet<string>
+        commands = new HashSet<string>
         {
-            "go",
-            "help",
-            "quit",
-            "look",
-            "status",
-            "take",
-            "drop",
-            "use"
+            "go","help","quit","look","status",
+            "take","drop","use","escape"
         };
     }
 
-    public bool IsCommand(string commandWord)
+    public bool IsCommand(string word)
     {
-        return validCommands.Contains(commandWord);
+        return commands.Contains(word);
     }
 
     public string ShowAll()
     {
-        return string.Join(", ", validCommands);
+        return string.Join(" ", commands);
     }
 }

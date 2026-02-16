@@ -1,4 +1,3 @@
-// Represents an item in the game
 public class Item
 {
     public int Weight { get; }

@@ -10,94 +10,74 @@ public class Player
     public Player()
     {
         health = 100;
-        backpack = new Inventory(25);
-        CurrentRoom = null;
+        backpack = new Inventory(15);
     }
 
-    // Player loses health
-    public void Damage(int amount)
-    {
-        health -= amount;
-        if (health < 0)
-            health = 0;
-    }
-
-    // Player gains health
-    public void Heal(int amount)
-    {
-        health += amount;
-        if (health > 100)
-            health = 100;
-    }
-
-    // Check if alive
     public bool IsAlive()
     {
         return health > 0;
     }
 
-    // Show status
+    public void Damage(int amount, string cause)
+    {
+        health -= amount;
+        Console.WriteLine($"You lost {amount} health due to {cause}.");
+        Console.WriteLine($"Health: {health}");
+    }
+
+    public void Heal(int amount)
+    {
+        health += amount;
+        Console.WriteLine($"You healed {amount}. Health: {health}");
+    }
+
     public void ShowStatus()
     {
-        Console.WriteLine("Health: " + health);
-        Console.WriteLine("Backpack: " + backpack.Show());
+        Console.WriteLine($"Health: {health}");
+        Console.WriteLine($"Backpack ({backpack.CurrentWeight()}/15): {backpack.Show()}");
     }
 
-    // Take item from room
-    public bool TakeFromChest(string itemName)
+    public void TakeFromRoom(string name)
     {
-        Item item = CurrentRoom.Chest.Get(itemName);
+        Item item = CurrentRoom.Chest.Take(name);
 
         if (item == null)
         {
-            Console.WriteLine("Item not found.");
-            return false;
-        }
-
-        if (!backpack.Put(itemName, item))
-        {
-            Console.WriteLine("Too heavy.");
-            CurrentRoom.Chest.Put(itemName, item);
-            return false;
-        }
-
-        Console.WriteLine("Taken: " + itemName);
-        return true;
-    }
-
-    // Drop item into room
-    public bool DropToChest(string itemName)
-    {
-        Item item = backpack.Get(itemName);
-
-        if (item == null)
-        {
-            Console.WriteLine("You don't have that item.");
-            return false;
-        }
-
-        CurrentRoom.Chest.Put(itemName, item);
-        Console.WriteLine("Dropped: " + itemName);
-        return true;
-    }
-
-    // Use item
-    public bool HasItem(string itemName)
-    {
-        return backpack.Get(itemName) != null;
-    }
-
-    public void UseMedkit()
-    {
-        Item med = backpack.Get("medkit");
-
-        if (med == null)
-        {
-            Console.WriteLine("You don't have a medkit.");
+            Console.WriteLine("No such item here.");
             return;
         }
 
-        Heal(50);
-        Console.WriteLine("Health restored by 50.");
+        if (!backpack.Put(name, item))
+        {
+            Console.WriteLine("Backpack too heavy.");
+            CurrentRoom.Chest.Put(name, item);
+            return;
+        }
+
+        Console.WriteLine($"{name} taken.");
+    }
+
+    public void DropToRoom(string name)
+    {
+        Item item = backpack.Take(name);
+
+        if (item == null)
+        {
+            Console.WriteLine("You don't have that.");
+            return;
+        }
+
+        CurrentRoom.Chest.Put(name, item);
+        Console.WriteLine($"{name} dropped.");
+    }
+
+    public bool HasItem(string name)
+    {
+        return backpack.Contains(name);
+    }
+
+    public void RemoveItem(string name)
+    {
+        backpack.Take(name);
     }
 }
