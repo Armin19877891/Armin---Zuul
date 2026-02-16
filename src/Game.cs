@@ -1,181 +1,137 @@
 using System;
 
-namespace Zuul
+class Game
 {
-    class Game
+    private Parser parser;
+    private Player player;
+    private bool gameWon;
+    private bool powerRestored;
+
+    public Game()
     {
-        private Parser parser;
-        private Player player;
-        private bool finished;
+        parser = new Parser();
+        player = new Player();
+        gameWon = false;
+        powerRestored = false;
+        CreateRooms();
+    }
 
-        public Game()
+    private void CreateRooms()
+    {
+        // === ROOMS ===
+        Room airlock = new Room("airlock", "A fractured airlock opens into a silent vessel.");
+        Room cargoHold = new Room("cargoHold", "Loose containers drift in weak gravity.");
+        Room reactorShaft = new Room("reactorShaft", "A vertical reactor column hums faintly.");
+        Room maintenanceTube = new Room("maintenanceTube", "A narrow tube forces you upward.");
+        Room commandBridge = new Room("commandBridge", "Dead consoles flicker in darkness.");
+        Room crewQuarters = new Room("crewQuarters", "Sleeping pods hang open and empty.");
+        Room medBay = new Room("medBay", "Cold lights reveal untouched supplies.");
+        Room securitySector = new Room("securitySector", "A damaged defense unit hangs above.");
+        Room powerCore = new Room("powerCore", "The main power core sits dormant.");
+        Room escapeShuttle = new Room("escapeShuttle", "An emergency shuttle waits silently.");
+
+        // === EXITS ===
+        airlock.SetExit("east", cargoHold);
+
+        cargoHold.SetExit("west", airlock);
+        cargoHold.SetExit("north", reactorShaft);
+        cargoHold.SetExit("up", maintenanceTube);
+
+        maintenanceTube.SetExit("down", cargoHold);
+        maintenanceTube.SetExit("up", commandBridge);
+
+        commandBridge.SetExit("down", maintenanceTube);
+        commandBridge.SetExit("south", securitySector);
+        commandBridge.SetExit("west", crewQuarters);
+
+        crewQuarters.SetExit("east", commandBridge);
+        crewQuarters.SetExit("north", medBay);
+
+        medBay.SetExit("south", crewQuarters);
+
+        securitySector.SetExit("north", commandBridge);
+        securitySector.SetExit("east", escapeShuttle);
+
+        reactorShaft.SetExit("south", cargoHold);
+        reactorShaft.SetExit("east", powerCore);
+
+        powerCore.SetExit("west", reactorShaft);
+        escapeShuttle.SetExit("west", securitySector);
+
+        // === ITEMS ===
+        cargoHold.Chest.Put("fusioncell", new Item(5, "A compact fusion power cell."));
+        medBay.Chest.Put("medkit", new Item(3, "A portable medical kit."));
+        crewQuarters.Chest.Put("medkit2", new Item(3, "A portable medical kit."));
+        cargoHold.Chest.Put("medkit3", new Item(3, "A portable medical kit."));
+
+        player.CurrentRoom = airlock;
+    }
+
+    public void Play()
+    {
+        Console.WriteLine("DRIFT PROTOCOL");
+        Console.WriteLine(player.CurrentRoom.GetLongDescription());
+
+        while (!gameWon && player.IsAlive())
         {
-            parser = new Parser();
-            player = new Player();
-            CreateRooms();
+            Command command = parser.GetCommand();
+            ProcessCommand(command);
+        }
+    }
+
+    private void ProcessCommand(Command command)
+    {
+        if (command.IsUnknown())
+        {
+            Console.WriteLine("Unknown command.");
+            return;
         }
 
-        public void Play()
+        switch (command.CommandWord)
         {
-            PrintWelcome();
+            case "help":
+                parser.ShowCommands();
+                break;
 
-            while (!finished)
-            {
-                if (!player.IsAlive())
-                {
-                    Console.WriteLine("You have died. Game over.");
-                    break;
-                }
+            case "go":
+                GoRoom(command);
+                break;
 
-                Command command = parser.GetCommand();
-                ProcessCommand(command);
-            }
+            case "look":
+                Console.WriteLine(player.CurrentRoom.GetLongDescription());
+                break;
 
-            Console.WriteLine("Thank you for playing.");
+            case "quit":
+                gameWon = true;
+                break;
+        }
+    }
+
+    private void GoRoom(Command command)
+    {
+        if (!command.HasSecondWord())
+        {
+            Console.WriteLine("Go where?");
+            return;
         }
 
-        private void PrintWelcome()
+        Room nextRoom = player.CurrentRoom.GetExit(command.SecondWord);
+
+        if (nextRoom == null)
         {
-            Console.WriteLine("Welcome to Zuul!");
-            Console.WriteLine("Type 'help' if you need help.");
-            Console.WriteLine();
-            PrintRoomInfo();
+            Console.WriteLine("No path detected.");
+            return;
         }
 
-        private void CreateRooms()
+        if (nextRoom.Name == "escapeShuttle" && !powerRestored)
         {
-            Room outside = new Room("outside the main entrance");
-            Room hall = new Room("in the main hall");
-            Room hallUpstairs = new Room("on the upper floor of the hall");
-            Room lab = new Room("inside the laboratory");
-
-            // Horizontal exits
-            outside.SetExit("north", hall, true);
-            hall.SetExit("south", outside);
-
-            hall.SetExit("east", lab, true);
-            lab.SetExit("west", hall);
-
-            hall.SetExit("up", hallUpstairs);
-            hallUpstairs.SetExit("down", hall);
-
-            // Items
-            outside.Chest.Put("key1", new Item(1, "A small brass key"));
-            hall.Chest.Put("key2", new Item(1, "A heavy iron key"));
-            lab.Chest.Put("medkit", new Item(3, "Restores health"));
-
-            player.CurrentRoom = outside;
+            Console.WriteLine("The shuttle has no power.");
+            return;
         }
 
-        private void ProcessCommand(Command command)
-        {
-            if (command.IsUnknown())
-            {
-                Console.WriteLine("I don't know what you mean...");
-                return;
-            }
+        player.CurrentRoom = nextRoom;
+        player.Damage(5);
 
-            switch (command.CommandWord)
-            {
-                case "help":
-                    PrintHelp();
-                    break;
-                case "go":
-                    GoRoom(command);
-                    break;
-                case "look":
-                    PrintRoomInfo();
-                    break;
-                case "take":
-                    Take(command);
-                    break;
-                case "drop":
-                    Drop(command);
-                    break;
-                case "status":
-                    PrintStatus();
-                    break;
-                case "use":
-                    Use(command);
-                    break;
-                case "quit":
-                    finished = true;
-                    break;
-            }
-        }
-
-        private void GoRoom(Command command)
-        {
-            if (!command.HasSecondWord())
-            {
-                Console.WriteLine("Go where?");
-                return;
-            }
-
-            Room nextRoom = player.CurrentRoom.GetExit(command.SecondWord);
-
-            if (nextRoom == null)
-            {
-                Console.WriteLine("That exit is locked or does not exist.");
-            }
-            else
-            {
-                player.CurrentRoom = nextRoom;
-                player.Damage(5);
-                PrintRoomInfo();
-            }
-        }
-
-        private void Use(Command command)
-        {
-            if (!command.HasSecondWord() || !command.HasThirdWord())
-            {
-                Console.WriteLine("Use what where?");
-                return;
-            }
-
-            Console.WriteLine(player.Use(command.SecondWord, command.ThirdWord));
-        }
-
-        private void Take(Command command)
-        {
-            if (!command.HasSecondWord())
-            {
-                Console.WriteLine("Take what?");
-                return;
-            }
-
-            player.TakeFromChest(command.SecondWord);
-        }
-
-        private void Drop(Command command)
-        {
-            if (!command.HasSecondWord())
-            {
-                Console.WriteLine("Drop what?");
-                return;
-            }
-
-            player.DropToChest(command.SecondWord);
-        }
-
-        private void PrintStatus()
-        {
-            Console.WriteLine($"Health: {player.Health}");
-            Console.WriteLine("Backpack: " + player.BackpackContents());
-        }
-
-        private void PrintRoomInfo()
-        {
-            Console.WriteLine("You are " + player.CurrentRoom.GetDescription());
-            Console.WriteLine("Exits: " + player.CurrentRoom.GetExitString());
-            Console.WriteLine("Items here: " + player.CurrentRoom.Chest.Show());
-        }
-
-        private void PrintHelp()
-        {
-            Console.WriteLine("Your command words are:");
-            Console.WriteLine(parser.CommandLibrary.ShowAll());
-        }
+        Console.WriteLine(player.CurrentRoom.GetLongDescription());
     }
 }

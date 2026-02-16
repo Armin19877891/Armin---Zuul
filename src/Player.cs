@@ -1,98 +1,103 @@
-namespace Zuul
+using System;
+
+public class Player
 {
-    class Player
+    public Room CurrentRoom { get; set; }
+
+    private int health;
+    private Inventory backpack;
+
+    public Player()
     {
-        public Room CurrentRoom { get; set; }
+        health = 100;
+        backpack = new Inventory(25);
+        CurrentRoom = null;
+    }
 
-        private int health;
-        private Inventory backpack;
+    // Player loses health
+    public void Damage(int amount)
+    {
+        health -= amount;
+        if (health < 0)
+            health = 0;
+    }
 
-        public Player()
-        {
+    // Player gains health
+    public void Heal(int amount)
+    {
+        health += amount;
+        if (health > 100)
             health = 100;
-            backpack = new Inventory(25);
+    }
+
+    // Check if alive
+    public bool IsAlive()
+    {
+        return health > 0;
+    }
+
+    // Show status
+    public void ShowStatus()
+    {
+        Console.WriteLine("Health: " + health);
+        Console.WriteLine("Backpack: " + backpack.Show());
+    }
+
+    // Take item from room
+    public bool TakeFromChest(string itemName)
+    {
+        Item item = CurrentRoom.Chest.Get(itemName);
+
+        if (item == null)
+        {
+            Console.WriteLine("Item not found.");
+            return false;
         }
 
-        public int Health => health;
-
-        public void Damage(int amount)
+        if (!backpack.Put(itemName, item))
         {
-            health -= amount;
-            if (health < 0) health = 0;
-        }
-
-        public void Heal(int amount)
-        {
-            health += amount;
-            if (health > 100) health = 100;
-        }
-
-        public bool IsAlive()
-        {
-            return health > 0;
-        }
-
-        public bool TakeFromChest(string itemName)
-        {
-            Item item = CurrentRoom.Chest.Get(itemName);
-
-            if (item == null)
-            {
-                System.Console.WriteLine("Item is not in this room.");
-                return false;
-            }
-
-            if (!backpack.Put(itemName, item))
-            {
-                CurrentRoom.Chest.Put(itemName, item);
-                System.Console.WriteLine("Item doesn't fit in your backpack.");
-                return false;
-            }
-
-            System.Console.WriteLine($"You picked up the {itemName}.");
-            return true;
-        }
-
-        public bool DropToChest(string itemName)
-        {
-            Item item = backpack.Get(itemName);
-
-            if (item == null)
-            {
-                System.Console.WriteLine("You don't have that item.");
-                return false;
-            }
-
+            Console.WriteLine("Too heavy.");
             CurrentRoom.Chest.Put(itemName, item);
-            System.Console.WriteLine($"You dropped the {itemName}.");
-            return true;
+            return false;
         }
 
-        public string BackpackContents()
+        Console.WriteLine("Taken: " + itemName);
+        return true;
+    }
+
+    // Drop item into room
+    public bool DropToChest(string itemName)
+    {
+        Item item = backpack.Get(itemName);
+
+        if (item == null)
         {
-            return backpack.Show();
+            Console.WriteLine("You don't have that item.");
+            return false;
         }
 
-        public string Use(string itemName, string direction)
+        CurrentRoom.Chest.Put(itemName, item);
+        Console.WriteLine("Dropped: " + itemName);
+        return true;
+    }
+
+    // Use item
+    public bool HasItem(string itemName)
+    {
+        return backpack.Get(itemName) != null;
+    }
+
+    public void UseMedkit()
+    {
+        Item med = backpack.Get("medkit");
+
+        if (med == null)
         {
-            Item item = backpack.Peek(itemName);
-
-            if (item == null)
-                return "You don't have that item.";
-
-            if (itemName.StartsWith("key"))
-            {
-                if (!CurrentRoom.HasExit(direction))
-                    return "There is no exit that way.";
-
-                if (!CurrentRoom.IsExitLocked(direction))
-                    return "That exit is already unlocked.";
-
-                CurrentRoom.UnlockExit(direction);
-                return $"You unlocked the {direction} exit.";
-            }
-
-            return "Nothing happens.";
+            Console.WriteLine("You don't have a medkit.");
+            return;
         }
+
+        Heal(50);
+        Console.WriteLine("Health restored by 50.");
     }
 }

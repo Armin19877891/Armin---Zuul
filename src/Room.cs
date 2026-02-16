@@ -1,74 +1,56 @@
 using System.Collections.Generic;
-using System.Text;
 
-namespace Zuul
+// Represents one room in the spaceship
+public class Room
 {
-    class Room
+    private string name;
+    private string description;
+    private Dictionary<string, Room> exits;
+    private Inventory chest;
+
+    public Room(string name, string description)
     {
-        private string description;
-        private Dictionary<string, Room> exits;
-        private HashSet<string> lockedExits;
-        private Inventory chest;
+        this.name = name;
+        this.description = description;
+        exits = new Dictionary<string, Room>();
+        chest = new Inventory(999999);
+    }
 
-        public Room(string description)
-        {
-            this.description = description;
-            exits = new Dictionary<string, Room>();
-            lockedExits = new HashSet<string>();
-            chest = new Inventory(999999);
-        }
+    // Room internal name
+    public string Name
+    {
+        get { return name; }
+    }
 
-        public Inventory Chest => chest;
+    // Room short description
+    public string Description
+    {
+        get { return description; }
+    }
 
-        public void SetExit(string direction, Room neighbor, bool locked = false)
-        {
-            exits[direction] = neighbor;
-            if (locked)
-                lockedExits.Add(direction);
-        }
+    public void SetExit(string direction, Room neighbor)
+    {
+        exits[direction] = neighbor;
+    }
 
-        public Room GetExit(string direction)
-        {
-            if (lockedExits.Contains(direction))
-                return null;
+    public Room GetExit(string direction)
+    {
+        if (exits.ContainsKey(direction))
+            return exits[direction];
 
-            exits.TryGetValue(direction, out Room room);
-            return room;
-        }
+        return null;
+    }
 
-        public bool UnlockExit(string direction)
-        {
-            return lockedExits.Remove(direction);
-        }
+    // FULL description with exits and items
+    public string GetLongDescription()
+    {
+        return description +
+               "\nExits: " + string.Join(" ", exits.Keys) +
+               "\nItems: " + chest.Show();
+    }
 
-        public bool HasExit(string direction)
-        {
-            return exits.ContainsKey(direction);
-        }
-
-        public bool IsExitLocked(string direction)
-        {
-            return lockedExits.Contains(direction);
-        }
-
-        public string GetDescription()
-        {
-            return description;
-        }
-
-        public string GetExitString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            foreach (string direction in exits.Keys)
-            {
-                if (lockedExits.Contains(direction))
-                    sb.Append($"{direction} (locked) ");
-                else
-                    sb.Append($"{direction} ");
-            }
-
-            return sb.ToString().Trim();
-        }
+    public Inventory Chest
+    {
+        get { return chest; }
     }
 }

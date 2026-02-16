@@ -1,34 +1,32 @@
 using System.Collections.Generic;
 
-namespace Zuul
+// Stores all valid commands
+public class CommandLibrary
 {
-    class CommandLibrary
+    private HashSet<string> validCommands;
+
+    public CommandLibrary()
     {
-        private HashSet<string> validCommands;
-
-        public CommandLibrary()
+        validCommands = new HashSet<string>
         {
-            validCommands = new HashSet<string>
-            {
-                "go",
-                "quit",
-                "help",
-                "look",
-                "take",
-                "drop",
-                "status",
-                "use"
-            };
-        }
+            "go",
+            "help",
+            "quit",
+            "look",
+            "status",
+            "take",
+            "drop",
+            "use"
+        };
+    }
 
-        public bool IsValidCommand(string commandWord)
-        {
-            return validCommands.Contains(commandWord);
-        }
+    public bool IsCommand(string commandWord)
+    {
+        return validCommands.Contains(commandWord);
+    }
 
-        public string ShowAll()
-        {
-            return string.Join(" ", validCommands);
-        }
+    public string ShowAll()
+    {
+        return string.Join(", ", validCommands);
     }
 }

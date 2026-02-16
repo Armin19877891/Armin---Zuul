@@ -1,72 +1,67 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Zuul
+// Stores items with a maximum allowed weight
+public class Inventory
 {
-    class Inventory
+    private int maxWeight;
+    private Dictionary<string, Item> items;
+
+    public Inventory(int maxWeight)
     {
-        private int maxWeight;
-        private Dictionary<string, Item> items;
+        this.maxWeight = maxWeight;
+        items = new Dictionary<string, Item>();
+    }
 
-        public Inventory(int maxWeight)
+    // Add item if weight allows
+    public bool Put(string itemName, Item item)
+    {
+        if (FreeWeight() >= item.Weight)
         {
-            this.maxWeight = maxWeight;
-            items = new Dictionary<string, Item>();
-        }
-
-        public bool Put(string itemName, Item item)
-        {
-            if (item.Weight + TotalWeight() > maxWeight)
-                return false;
-
             items[itemName] = item;
             return true;
         }
+        return false;
+    }
 
-        public Item Get(string itemName)
+    // Remove and return item
+    public Item Get(string itemName)
+    {
+        if (items.ContainsKey(itemName))
         {
-            if (!items.ContainsKey(itemName))
-                return null;
-
             Item item = items[itemName];
             items.Remove(itemName);
             return item;
         }
+        return null;
+    }
 
-        public Item Peek(string itemName)
-        {
-            if (!items.ContainsKey(itemName))
-                return null;
+    // Total weight of all items
+    public int TotalWeight()
+    {
+        int total = 0;
+        foreach (Item item in items.Values)
+            total += item.Weight;
 
-            return items[itemName];
-        }
+        return total;
+    }
 
-        public int TotalWeight()
-        {
-            int total = 0;
-            foreach (Item item in items.Values)
-            {
-                total += item.Weight;
-            }
-            return total;
-        }
+    // Remaining weight capacity
+    public int FreeWeight()
+    {
+        return maxWeight - TotalWeight();
+    }
 
-        public int FreeWeight()
-        {
-            return maxWeight - TotalWeight();
-        }
+    // Show item names
+    public string Show()
+    {
+        if (items.Count == 0)
+            return "Nothing";
 
-        public string Show()
-        {
-            if (items.Count == 0)
-                return "nothing";
+        StringBuilder sb = new StringBuilder();
+        foreach (var pair in items)
+            sb.Append(pair.Key + " ");
 
-            StringBuilder sb = new StringBuilder();
-            foreach (string key in items.Keys)
-            {
-                sb.Append(key + " ");
-            }
-            return sb.ToString().Trim();
-        }
+        return sb.ToString();
     }
 }
