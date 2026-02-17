@@ -1,0 +1,57 @@
+1️⃣ Get the fusioncell
+Airlock
+→ east
+Cargo Hold
+(take fusioncell)
+
+2️⃣ Restore Power
+Cargo Hold
+→ north
+Reactor Shaft
+→ east
+Power Core
+(use fusioncell)
+
+Power is now restored.
+
+3️⃣ Reach Escape Shuttle
+Power Core
+→ west
+Reactor Shaft
+→ south
+Cargo Hold
+→ up
+Maintenance Tube
+→ up
+Command Bridge
+→ south
+Security Sector
+→ east
+Escape Shuttle
+
+
+
+
+
+
+
+
+                        [ Med Bay ]
+                            ↑
+                            |
+                    [ Crew Quarters ]
+                            ↑
+                            |
+[ Airlock ] → [ Cargo Hold ] → [ Reactor Shaft ] → [ Power Core ]
+                   ↑   ↑
+                   |   |
+                   |   └────────────
+                   |                   |
+                   |               (north)
+                   |                   |
+              (up) |             [ Command Bridge ] → [ Security Sector ] → [ Escape Shuttle ]
+                   |                    ↑
+                   |                    |
+              [ Maintenance Tube ]────┘
+
+
