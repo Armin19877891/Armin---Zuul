@@ -1,6 +1,6 @@
 # DRIFT PROTOCOL
 
-Een simpele textadventure.
+Een simpele text adventure.
 
 ## Het spel spelen
 
@@ -23,5 +23,6 @@ dotnet run
 ```
 Vind de escape shuttle En Escape
 Veel plezier!
+
 
 
