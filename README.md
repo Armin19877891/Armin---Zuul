@@ -1,4 +1,4 @@
-# Zuul
+# DRIFT PROTOCOL
 
 Een simpele textadventure.
 
@@ -21,6 +21,7 @@ Typ dit commando:
 ```
 dotnet run
 ```
-
-Het spel start nu.
+Vind de escape shuttle
+Escape
 Veel plezier!
+
