@@ -28,7 +28,7 @@ public class Player
     public void Heal(int amount)
     {
         health += amount;
-        Console.WriteLine($"You healed {amount}. Health: {health}");
+        Console.WriteLine($"You healed for {amount}. Current Health: {health}");
     }
 
     public void ShowStatus()
@@ -49,7 +49,7 @@ public class Player
 
         if (!backpack.Put(name, item))
         {
-            Console.WriteLine("Backpack too heavy.");
+            Console.WriteLine("You cant carry anymore stuff.");
             CurrentRoom.Chest.Put(name, item);
             return;
         }
@@ -68,7 +68,7 @@ public class Player
         }
 
         CurrentRoom.Chest.Put(name, item);
-        Console.WriteLine($"{name} dropped.");
+        Console.WriteLine($"{name} dropped, it floats in the air.");
     }
 
     public bool HasItem(string name)

@@ -19,44 +19,44 @@ class Game
     private void CreateRooms()
     {
         Room airlock = new Room("airlock",
-            "The entry airlock is dark and silent.",
-            "The entry airlock is brightly illuminated.");
+            "The entry airlock is dark and silent, the ship is drifting in space...",
+            "The entry airlock is brightly illuminated, but the ship is still adrift.");
 
-        Room cargoHold = new Room("cargoHold",
-            "Containers float in shadow.",
+        Room cargoHold = new Room("cargo hold",
+            "Containers float in shadow, ripped wires cover the room.",
             "Cargo crates sit secured under bright lights.");
 
-        Room reactorShaft = new Room("reactorShaft",
+        Room reactorShaft = new Room("reactor shaft",
             "The reactor shaft is dormant.",
             "Energy flows through the reactor systems.");
 
-        Room maintenanceTube = new Room("maintenanceTube",
-            "A narrow vertical shaft disappears upward.",
+        Room maintenanceTube = new Room("maintenance vents",
+            "A narrow vertical tunnel disappears upward.",
             "Maintenance lights guide the vertical climb.");
 
-        Room commandBridge = new Room("commandBridge",
+        Room commandBridge = new Room("command bridge",
             "The bridge consoles are lifeless.",
             "Navigation systems glow across the bridge.");
 
-        Room crewQuarters = new Room("crewQuarters",
+        Room crewQuarters = new Room("crew quarters",
             "Sleeping pods drift in darkness.",
             "Crew cabins are softly lit.");
 
-        Room medBay = new Room("medBay",
+        Room medBay = new Room("med bay",
             "Medical tools float in dim light.",
             "Medical systems hum with restored power.");
 
-        Room securitySector = new Room("securitySector",
+        Room securitySector = new Room("security sector",
             "A broken turret hangs from the ceiling.",
-            "Security systems scan the corridor.");
+            "Security systems scan the corridor for hostile life, a lifeless rat lies still on the floor.");
 
-        Room powerCore = new Room("powerCore",
-            "The core is completely inactive.",
+        Room powerCore = new Room("power core",
+            "The core of the ship is completely inactive.",
             "The core radiates stable energy.");
 
-        Room escapeShuttle = new Room("escapeShuttle",
+        Room escapeShuttle = new Room("escape shuttle",
             "The shuttle sits powerless.",
-            "The shuttle engines are ready for launch.");
+            "The shuttle engines are ready for launch. coordinates aimed at the nearest station.");
 
         airlock.SetExit("east", cargoHold);
 
@@ -96,8 +96,8 @@ class Game
 
     public void Play()
     {
-        Console.WriteLine("DRIFT PROTOCOL");
-        Console.WriteLine("Type 'help' to see commands.\n");
+        Console.WriteLine("Welcome to DRIFT PROTOCOL");
+        Console.WriteLine("Type 'help' to view your possible actions.\n");
         Console.WriteLine(player.CurrentRoom.GetLongDescription(powerOn));
 
         while (!gameOver && player.IsAlive())
@@ -111,7 +111,7 @@ class Game
     {
         if (command.IsUnknown())
         {
-            Console.WriteLine("Unknown command.");
+            Console.WriteLine("System does not recognize command.");
             return;
         }
 
@@ -133,7 +133,7 @@ class Game
     {
         if (!command.HasSecondWord())
         {
-            Console.WriteLine("Go where?");
+            Console.WriteLine("Decide the direction");
             return;
         }
 
@@ -141,7 +141,7 @@ class Game
 
         if (next == null)
         {
-            Console.WriteLine("No path.");
+            Console.WriteLine("You cant find a way.");
             return;
         }
 
@@ -149,9 +149,10 @@ class Game
 
         string cause = next.Name switch
         {
-            "securitySector" => "a broken turret",
-            "reactorShaft" => "radiation exposure",
+            "securitySector" => "a broken turret shooting your leg",
+            "reactorShaft" => "low level radiation exposure",
             "cargoHold" => "loose wiring",
+            "maintenanceTube" => "an unnerving rat looking creature biting you, you are infected",
             _ => "unstable flooring"
         };
 
@@ -169,7 +170,7 @@ class Game
 
         if (item.StartsWith("medkit") && player.HasItem(item))
         {
-            player.Heal(50);
+            player.Heal(30);
             player.RemoveItem(item);
             return;
         }
@@ -180,7 +181,7 @@ class Game
             {
                 powerOn = true;
                 player.RemoveItem("fusioncell");
-                Console.WriteLine("Power restored.");
+                Console.WriteLine("Power restored.All Systems Online.");
             }
             else
             {
@@ -198,7 +199,7 @@ class Game
         }
         else
         {
-            Console.WriteLine("Escape not possible.");
+            Console.WriteLine("Escape not possible, try finding a way out.");
         }
     }
 }
