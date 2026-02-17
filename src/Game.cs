@@ -22,39 +22,39 @@ class Game
             "The entry airlock is dark and silent, the ship is drifting in space...",
             "The entry airlock is brightly illuminated, but the ship is still adrift.");
 
-        Room cargoHold = new Room("cargo hold",
+        Room cargoHold = new Room("cargoHold",
             "Containers float in shadow, ripped wires cover the room.",
             "Cargo crates sit secured under bright lights.");
 
-        Room reactorShaft = new Room("reactor shaft",
+        Room reactorShaft = new Room("reactorShaft",
             "The reactor shaft is dormant.",
             "Energy flows through the reactor systems.");
 
-        Room maintenanceTube = new Room("maintenance vents",
+        Room maintenanceTube = new Room("maintenanceTube",
             "A narrow vertical tunnel disappears upward.",
             "Maintenance lights guide the vertical climb.");
 
-        Room commandBridge = new Room("command bridge",
+        Room commandBridge = new Room("commandBridge",
             "The bridge consoles are lifeless.",
             "Navigation systems glow across the bridge.");
 
-        Room crewQuarters = new Room("crew quarters",
+        Room crewQuarters = new Room("crewQuarters",
             "Sleeping pods drift in darkness.",
             "Crew cabins are softly lit.");
 
-        Room medBay = new Room("med bay",
+        Room medBay = new Room("medBay",
             "Medical tools float in dim light.",
             "Medical systems hum with restored power.");
 
-        Room securitySector = new Room("security sector",
+        Room securitySector = new Room("securitySector",
             "A broken turret hangs from the ceiling.",
             "Security systems scan the corridor for hostile life, a lifeless rat lies still on the floor.");
 
-        Room powerCore = new Room("power core",
+        Room powerCore = new Room("powerCore",
             "The core of the ship is completely inactive.",
             "The core radiates stable energy.");
 
-        Room escapeShuttle = new Room("escape shuttle",
+        Room escapeShuttle = new Room("escapeShuttle",
             "The shuttle sits powerless.",
             "The shuttle engines are ready for launch. coordinates aimed at the nearest station.");
 
